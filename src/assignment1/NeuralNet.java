@@ -91,6 +91,7 @@ public class NeuralNet implements NeuralNetInterface {
      */
     @Override
     public double train(double[] X, double argValue) {
+
         return 0;
     }
 
