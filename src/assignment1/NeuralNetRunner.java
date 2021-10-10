@@ -43,17 +43,14 @@ public class NeuralNetRunner {
         Scanner sc = new Scanner(System.in);
         System.out.print("how many time you want to train:\n");
         int numTrials = sc.nextInt();
-        System.out.print("how many epoch you want to run in each trail, if do not input any value, it means keeping training until error smaller than target error: \n");
-        String epochstr = sc.nextLine();
-        int epoch;
-        if(epochstr.equals("")){
-            epoch = -1;
-        }else{
-            epoch = Integer.valueOf(epochstr);
-        }
-        sc.close();
+        System.out.print("how many epoch you want to run in each trail, if you want to keep training until error smaller than target error, input -1: \n");
+        int epoch = sc.nextInt();
+
+
+
         System.out.print("if choose binary representation, please input 0, if use bipolar representation, please input 1:\n");
         int binaryRep = sc.nextInt();
+        sc.close();
         int totalSuccEpoch = 0;
         int totalSuccTrail = 0;
         int aveSuccEpoch = 0;
@@ -79,7 +76,7 @@ public class NeuralNetRunner {
         }
         System.out.print("-----SUMMARY-------\n");
         if(totalSuccTrail>0) aveSuccEpoch = totalSuccEpoch/totalSuccTrail;
-        System.out.print(String.format("In %d trail, the average convergence rate is %d", aveSuccEpoch));
+        System.out.print(String.format("The average convergence rate is %d", aveSuccEpoch));
 
 
 
