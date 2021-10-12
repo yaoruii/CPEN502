@@ -4,32 +4,87 @@ import Sarb.NeuralNetInterface;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
 
 public class NeuralNet implements NeuralNetInterface {
-    public int argNumInputs;//The number of inputs in your input vector
-    public int argNumHidden;//The number of hidden neurons in your hidden layer. Only a single hidden layer is supported
-    public double argLearningRate;//The learning rate coefficient
-    public double argMomentumTerm;//The momentum coefficient
-    public double argA;// Integer lower bound of sigmoid used by the output neuron only.
-    public double argB;// Integer upper bound of sigmoid used by the output neuron only.
-    public boolean argUseBipolarForHiddenNer;
+    private int argNumInputs;//The number of inputs in your input vector
+    private int argNumHidden;//The number of hidden neurons in your hidden layer. Only a single hidden layer is supported
+    private int argNumOutput;
+    private double argLearningRate;//The learning rate coefficient
+    private double argMomentumTerm;//The momentum coefficient
+    private double argA;// Integer lower bound of sigmoid used by the output neuron only.
+    private double argB;// Integer upper bound of sigmoid used by the output neuron only.
+    private boolean argUseBipolar;
+
+    //each layer's output:
+    private double[]  input2Hidden ;
+    private double [] hidden2Output;
+    private double[] netOutput;
+
+    //size of each layer's output:
+    private int input2HiddenSize;
+    private int hidden2OutputSize;
+    private int netOutputSize;
+
+    private final double nodeForBias = 1;
+    private final double errorRate = 0.5;
+
+    //each layer's weights:
+    private double[][]  input2HiddenWeight ;
+    private double [][] hidden2OutputWeight;
+
+    //each layer's weights' change:
+    private double[][]  input2HiddenWeightChange;
+    private double [][] hidden2OutputWeightChange;
+
+    //each layer's delta:δi
+    private double[] hiddenErrorSignal;
+    private double[] outputErrorSignal;
+
+    //random generator:
+    private Random random;
 
 
     public NeuralNet (
             int argNumInputs,
             int argNumHidden,
+            int argNumOutput,
             double argLearningRate,
             double argMomentumTerm,
             double argA,
             double argB,
-            boolean argUseBipolarForHiddenNer){
+            boolean argUseBipolar){
         this.argNumInputs = argNumInputs;
         this.argNumHidden = argNumHidden;
+        this.argNumOutput = argNumOutput;
         this.argLearningRate = argLearningRate;
         this.argMomentumTerm = argMomentumTerm;
         this.argA =argA;
         this.argB = argB;
-        this.argUseBipolarForHiddenNer = argUseBipolarForHiddenNer;
+        this.argUseBipolar = argUseBipolar;
+
+        //initialize:
+        this.random = new Random();
+
+        this.input2HiddenSize = this.argNumInputs+1;
+        this.hidden2OutputSize = this.argNumHidden +1;
+        this.netOutputSize = this.argNumOutput;
+
+        this.input2Hidden = new double[input2HiddenSize];
+        this.hidden2Output = new double[hidden2OutputSize];
+        this.netOutput = new double[netOutputSize];
+
+        this.input2HiddenWeight = new double[input2HiddenSize][hidden2OutputSize];
+        this.hidden2OutputWeight = new double[hidden2OutputSize][netOutputSize];
+
+        this.input2HiddenWeightChange = new double[input2HiddenSize][hidden2OutputSize];
+        this.hidden2OutputWeightChange = new double[hidden2OutputSize][netOutputSize];
+
+        this.hiddenErrorSignal = new double[hidden2OutputSize];
+        this.outputErrorSignal = new double[netOutputSize];
+
+
+
     };
 
     /**
@@ -44,7 +99,7 @@ public class NeuralNet implements NeuralNetInterface {
     /**
      * This method implements a general sigmoid with asymptotes bounded by (a,b)
      * @param x input
-     * @return f(x) = b_minus_a / (1 + e(-x)) - minus_a
+     * @return f(x) = b-a / (1 + e(-x)) + a
      */
     @Override
     public double customSigmoid(double x) {
@@ -93,6 +148,11 @@ public class NeuralNet implements NeuralNetInterface {
     public double train(double[] X, double argValue) {
 
         return 0;
+    }
+
+    private void updateWeights(double trainOutput, double argValue){
+
+
     }
 
 
