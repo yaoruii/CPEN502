@@ -15,6 +15,8 @@ public class NeuralNet implements NeuralNetInterface {
     private double argA;// Integer lower bound of sigmoid used by the output neuron only.
     private double argB;// Integer upper bound of sigmoid used by the output neuron only.
     private boolean argUseBipolar;
+    private double randomWeightLower;
+    private double randomWeightUpper;
 
     //each layer's output:
     private double[]  input2Hidden ;
@@ -53,7 +55,9 @@ public class NeuralNet implements NeuralNetInterface {
             double argMomentumTerm,
             double argA,
             double argB,
-            boolean argUseBipolar){
+            boolean argUseBipolar,
+            double randomWeightLower,
+            double randomWeightUpper){
         this.argNumInputs = argNumInputs;
         this.argNumHidden = argNumHidden;
         this.argNumOutput = argNumOutput;
@@ -62,6 +66,8 @@ public class NeuralNet implements NeuralNetInterface {
         this.argA =argA;
         this.argB = argB;
         this.argUseBipolar = argUseBipolar;
+        this.randomWeightLower = randomWeightLower;
+        this.randomWeightUpper = randomWeightUpper;
 
         //initialize:
         this.random = new Random();
@@ -116,6 +122,18 @@ public class NeuralNet implements NeuralNetInterface {
      */
     @Override
     public void initializeWeights() {
+        for(int i = 0; i<input2HiddenSize; i++){
+            for(int j = 0; j<hidden2OutputSize-1; j++){
+                input2HiddenWeight[i][j] = random.nextDouble()*(randomWeightUpper - randomWeightLower) + randomWeightLower;
+            }
+        }
+        for(int i = 0; i< hidden2OutputSize; i++){
+            for(int j = 0; j<netOutputSize; j++){
+                hidden2OutputWeight[i][j] = random.nextDouble()*(randomWeightUpper - randomWeightLower) + randomWeightLower;
+            }
+
+        }
+
 
     }
 
@@ -124,6 +142,17 @@ public class NeuralNet implements NeuralNetInterface {
      */
     @Override
     public void zeroWeights() {
+        for(int i = 0; i<input2HiddenSize; i++){
+            for(int j = 0; j<hidden2OutputSize-1; j++){
+                input2HiddenWeight[i][j] = 0;
+            }
+        }
+        for(int i = 0; i< hidden2OutputSize; i++){
+            for(int j = 0; j<netOutputSize; j++){
+                hidden2OutputWeight[i][j] = 0;
+            }
+
+        }
 
     }
 
@@ -146,8 +175,11 @@ public class NeuralNet implements NeuralNetInterface {
      */
     @Override
     public double train(double[] X, double argValue) {
-
-        return 0;
+        double error = 0;
+        double trainOutput = outputFor(X);
+        error += errorRate*Math.pow((trainOutput-argValue), 2);
+        updateWeights(trainOutput, argValue);
+        return error;
     }
 
     private void updateWeights(double trainOutput, double argValue){
