@@ -17,8 +17,8 @@ public class NeuralNet implements NeuralNetInterface {
     private boolean argUseBipolar;
 
     //each layer's output:
-    private double[]  input2Hidden ;
-    private double [] hidden2Output;
+    private double[] input2Hidden;
+    private double[] hidden2Output;
     private double[] netOutput;
 
     //size of each layer's output:
@@ -30,12 +30,12 @@ public class NeuralNet implements NeuralNetInterface {
     private final double errorRate = 0.5;
 
     //each layer's weights:
-    private double[][]  input2HiddenWeight ;
-    private double [][] hidden2OutputWeight;
+    private double[][] input2HiddenWeight;
+    private double[][] hidden2OutputWeight;
 
     //each layer's weights' change:
-    private double[][]  input2HiddenWeightChange;
-    private double [][] hidden2OutputWeightChange;
+    private double[][] input2HiddenWeightChange;
+    private double[][] hidden2OutputWeightChange;
 
     //each layer's delta:δi
     private double[] hiddenErrorSignal;
@@ -45,7 +45,7 @@ public class NeuralNet implements NeuralNetInterface {
     private Random random;
 
 
-    public NeuralNet (
+    public NeuralNet(
             int argNumInputs,
             int argNumHidden,
             int argNumOutput,
@@ -53,21 +53,21 @@ public class NeuralNet implements NeuralNetInterface {
             double argMomentumTerm,
             double argA,
             double argB,
-            boolean argUseBipolar){
+            boolean argUseBipolar) {
         this.argNumInputs = argNumInputs;
         this.argNumHidden = argNumHidden;
         this.argNumOutput = argNumOutput;
         this.argLearningRate = argLearningRate;
         this.argMomentumTerm = argMomentumTerm;
-        this.argA =argA;
+        this.argA = argA;
         this.argB = argB;
         this.argUseBipolar = argUseBipolar;
 
         //initialize:
         this.random = new Random();
 
-        this.input2HiddenSize = this.argNumInputs+1;
-        this.hidden2OutputSize = this.argNumHidden +1;
+        this.input2HiddenSize = this.argNumInputs + 1;
+        this.hidden2OutputSize = this.argNumHidden + 1;
         this.netOutputSize = this.argNumOutput;
 
         this.input2Hidden = new double[input2HiddenSize];
@@ -84,11 +84,13 @@ public class NeuralNet implements NeuralNetInterface {
         this.outputErrorSignal = new double[netOutputSize];
 
 
+    }
 
-    };
+    ;
 
     /**
      * This method implements a bipolar sigmoid of the input X
+     *
      * @param x input
      * @return f(x) = 2 / (1+e(-x)) - 1
      */
@@ -96,8 +98,10 @@ public class NeuralNet implements NeuralNetInterface {
     public double sigmoid(double x) {
         return 0;
     }
+
     /**
      * This method implements a general sigmoid with asymptotes bounded by (a,b)
+     *
      * @param x input
      * @return f(x) = b-a / (1 + e(-x)) + a
      */
@@ -108,11 +112,11 @@ public class NeuralNet implements NeuralNetInterface {
 
 
     /**
-     *  Initialize the weights to random values from  -0.5 to +0.5
-     *  For say 2 inputs, the input vector is [0] & [1]. We add [2] for the bias.
-     *  Like wise for hidden units. For say 2 hidden units which are stored in an array
-     *  [0] & [1] are the hidden & [2] the bias.
-     *  We also initialize the last weight change arrays. This is to implement the alpha term.
+     * Initialize the weights to random values from  -0.5 to +0.5
+     * For say 2 inputs, the input vector is [0] & [1]. We add [2] for the bias.
+     * Like wise for hidden units. For say 2 hidden units which are stored in an array
+     * [0] & [1] are the hidden & [2] the bias.
+     * We also initialize the last weight change arrays. This is to implement the alpha term.
      */
     @Override
     public void initializeWeights() {
@@ -128,7 +132,6 @@ public class NeuralNet implements NeuralNetInterface {
     }
 
     /**
-     *
      * @param X The input vector. An array of doubles.
      * @return The value returned by th LUT or NN for this input vector
      */
@@ -140,8 +143,9 @@ public class NeuralNet implements NeuralNetInterface {
     /**
      * This method will tell the NN or the LUT the output value that should be mapped to the given input vector. I.e.
      * the desired correct output value for an input
-     * @param X The input vector
-     * @param argValue  The new value to learn
+     *
+     * @param X        The input vector
+     * @param argValue The new value to learn
      * @return The error in the output for that input vector
      */
     @Override
@@ -150,14 +154,48 @@ public class NeuralNet implements NeuralNetInterface {
         return 0;
     }
 
-    private void updateWeights(double trainOutput, double argValue){
-
-
+    private void updateWeights(double trainOutput, double argValue) {
+        // Calculate δ from hidden layer to output layer
+        for (int i = 0; i < argNumOutput; i++) {
+            if (!argUseBipolar) {
+                outputErrorSignal[i] = trainOutput * (1 - trainOutput) * (argValue - trainOutput);
+            } else {
+                outputErrorSignal[i] = 0.5 * (1 - Math.pow(trainOutput, 2)) * (argValue - trainOutput);
+            }
+        }
+        // Update the weight change
+        for (int j = 0; j < argNumOutput; j++) {
+            for (int i = 0; i <= argNumHidden; i++) {
+                hidden2OutputWeight[i][j] += argMomentumTerm * hidden2OutputWeightChange[i][j] + argLearningRate * outputErrorSignal[j] * hidden2Output[i];
+                hidden2OutputWeightChange[i][j] = argMomentumTerm * hidden2OutputWeightChange[i][j] + argLearningRate * outputErrorSignal[j] * hidden2Output[i];
+            }
+        }
+        // Calculate δ from input layer to hidden layer
+        for (int i = 0; i < argNumHidden; i++) {
+            if (!argUseBipolar) {
+                hiddenErrorSignal[i] = hidden2Output[i] * (1 - hidden2Output[i]);
+            } else {
+                hiddenErrorSignal[i] = 0.5 * (1 - Math.pow(hidden2Output[i], 2));
+            }
+            double totalSum = 0.0;
+            for (int j = 0; j < argNumOutput; j++) {
+                totalSum += outputErrorSignal[j] * hidden2OutputWeight[i][j];
+            }
+            hiddenErrorSignal[i] *= totalSum;
+        }
+        // Update the weight change
+        for (int j = 0; j < argNumHidden; j++) {
+            for (int i = 0; i <= argNumInputs; i++) {
+                input2HiddenWeight[i][j] += argMomentumTerm * input2HiddenWeightChange[i][j] + argLearningRate * hiddenErrorSignal[j] * input2Hidden[i];
+                input2HiddenWeightChange[i][j] = argMomentumTerm * input2HiddenWeightChange[i][j] + argLearningRate * hiddenErrorSignal[j] * input2Hidden[i];
+            }
+        }
     }
 
 
     /**
      * A method to write either a LUT or weights of an neural net to a file.
+     *
      * @param argFile argFile of type File
      */
     @Override
@@ -168,7 +206,8 @@ public class NeuralNet implements NeuralNetInterface {
     /**
      * Loads the LUT or neural net weights from file. The load must of course have knowledge of how the data was written out by the save method.
      * You should raise an error in the case that an attempt is being made to load data into an LUT or neural net whose structure does not match
-     *  the data in the file. (e.g. wrong number of hidden neurons).
+     * the data in the file. (e.g. wrong number of hidden neurons).
+     *
      * @param argFileName
      * @throws IOException IOException
      */
