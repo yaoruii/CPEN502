@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 
+import java.lang.Math;
+
 public class NeuralNet implements NeuralNetInterface {
     private int argNumInputs;//The number of inputs in your input vector
     private int argNumHidden;//The number of hidden neurons in your hidden layer. Only a single hidden layer is supported
@@ -114,7 +116,7 @@ public class NeuralNet implements NeuralNetInterface {
      */
     @Override
     public double customSigmoid(double x) {
-        return 0;
+        return (argB-argA)/(1+Math.exp(-x))+argA;
     }
 
 
@@ -167,7 +169,30 @@ public class NeuralNet implements NeuralNetInterface {
      */
     @Override
     public double outputFor(double[] X) {
-        return 0;
+        //load the input vector in and add bias node for the input layer
+        for (int i = 0; i < argNumInputs; i++){
+            input2Hidden[i] = X[i];
+        }
+        input2Hidden[argNumInputs] = nodeForBias;
+
+        //calculate the output for hidder layer and add bias node for hidder layer
+        for (int i = 0; i < argNumHidden; i++){
+            for(int j = 0; j <= argNumInputs; j++){
+                hidden2Output[i] += input2Hidden[j] * input2HiddenWeight[j][i];
+            }
+            hidden2Output[i] = customSigmoid(hidden2Output[i]);
+        }
+        hidden2Output[argNumHidden] = nodeForBias;
+
+        //calculate nerualnet's output
+        for (int i = 0; i< argNumOutput;i++){
+            for (int j = 0; j <= argNumHidden;j++){
+                netOutput[i] += hidden2Output[j] * hidden2OutputWeight[j][i];
+            }
+            netOutput[i] = customSigmoid(netOutput[i]);
+        }
+
+        return netOutput[0];//only the first output in our case when numoutput=1
     }
 
     /**
