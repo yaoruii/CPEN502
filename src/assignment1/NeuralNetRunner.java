@@ -37,22 +37,28 @@ public class NeuralNetRunner {
         int numTrials = sc.nextInt();
         System.out.print("how many epoch you want to run in each trail, if you want to keep training until error smaller than target error, input -1: \n");
         int epoch = sc.nextInt();
-        System.out.print("if choose binary representation, please input 0, if use bipolar representation, please input 1:\n");
+        System.out.print("if choose binary representation, please input 1, if use bipolar representation, please input 0:\n");
         int binaryRep = sc.nextInt();
         sc.close();
         int totalSuccEpoch = 0;
         int totalSuccTrail = 0;
         int aveSuccEpoch = 0;
         NeuralNetRunner runner = new NeuralNetRunner();
+        int lower;
+        int upper;
         boolean argUseBipolar;
         if (binaryRep == 1) {
             runner.input = new double[][]{{0, 0}, {0, 1}, {1, 0}, {1, 1}};
             runner.targetOutput = new double[]{0, 1, 1, 0};
             argUseBipolar = false;
+            lower = 0;
+            upper = 1;
         } else {
             runner.input = new double[][]{{-1, -1}, {1, -1}, {-1, 1}, {1, 1}};
             runner.targetOutput = new double[]{-1, 1, 1, -1};
             argUseBipolar = true;
+            lower = -1;
+            upper = 1;
         }
         runner.neuralNet = new NeuralNet(
                 2,
@@ -60,21 +66,23 @@ public class NeuralNetRunner {
                 1,
                 0.2,
                 0.0,
-                -1,
-                1,
-                argUseBipolar
+                lower,
+                upper,
+                argUseBipolar,
+                -0.5,
+                0.5
 
         );
-        for (int i = 0; i < numTrials; i++) {
+        for (int i = 1; i <= numTrials; i++) {
             int stopepoch = runner.train(i, epoch);
             if (stopepoch != -1) {
                 //reach the target error:
-                System.out.print(String.format("---- %d trail training stops in epoch %d", i, stopepoch));
+                System.out.print(String.format("---- %d trail training stops in epoch %d\n", i, stopepoch));
                 totalSuccEpoch += stopepoch;
                 totalSuccTrail++;
             } else {
                 //can not reach the target error:
-                System.out.print(String.format("---- %d trail training can not reach target error", i));
+                System.out.print(String.format("---- %d trail training can not reach target error\n", i));
             }
         }
         System.out.print("-----SUMMARY-------\n");
