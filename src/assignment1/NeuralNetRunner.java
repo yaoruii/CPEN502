@@ -1,5 +1,10 @@
 package assignment1;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Scanner;
 
 public class NeuralNetRunner {
@@ -13,8 +18,9 @@ public class NeuralNetRunner {
     public double acceptError = 0.05;
 
 
-    private int train(int trail, int epoch) {
-        System.out.print(String.format("---- Begin %d trail now ----\n", trail));
+    private int train(int trail, int epoch, List<List<Double>> trailEpochError) {
+        System.out.print(String.format("---- Begin %d trail now ----\n", trail+1));
+        trailEpochError.add(new LinkedList<>());
         neuralNet.initializeWeights();
         for (int i = 1; i <= epoch || epoch == -1; i++) {
             double sumError = 0;
@@ -22,6 +28,7 @@ public class NeuralNetRunner {
                 sumError += neuralNet.train(input[j], targetOutput[j]);
             }
             System.out.print(String.format("------- error in %d epoch is %f ----\n", i, sumError));
+            trailEpochError.get(trail).add(sumError);
             if (sumError <= acceptError) {
                 System.out.print(String.format("---- Find the target error at %d epochs \n", i));
                 return i;
@@ -47,6 +54,8 @@ public class NeuralNetRunner {
         int lower;
         int upper;
         boolean argUseBipolar;
+        int minStopEpoch = Integer.MAX_VALUE;
+        int minStopEpochIdx = numTrials-1;
         if (binaryRep == 1) {
             runner.input = new double[][]{{0, 0}, {0, 1}, {1, 0}, {1, 1}};
             runner.targetOutput = new double[]{0, 1, 1, 0};
@@ -73,22 +82,38 @@ public class NeuralNetRunner {
                 0.5
 
         );
-        for (int i = 1; i <= numTrials; i++) {
-            int stopepoch = runner.train(i, epoch);
+        List<List<Double>> trailEpochError = new LinkedList<>();
+        for (int i = 0; i < numTrials; i++) {
+            int stopepoch = runner.train(i, epoch, trailEpochError);
             if (stopepoch != -1) {
                 //reach the target error:
                 System.out.print(String.format("---- %d trail training stops in epoch %d\n", i, stopepoch));
                 totalSuccEpoch += stopepoch;
+                if(minStopEpoch>stopepoch){
+                    minStopEpoch = stopepoch;
+                    minStopEpochIdx = i;
+                }
                 totalSuccTrail++;
             } else {
                 //can not reach the target error:
                 System.out.print(String.format("---- %d trail training can not reach target error\n", i));
             }
         }
-        System.out.print("-----SUMMARY-------\n");
+        System.out.print("---------------- SUMMARY---------------\n");
         if (totalSuccTrail > 0) aveSuccEpoch = totalSuccEpoch / totalSuccTrail;
-        System.out.print(String.format("The average convergence rate is %d", aveSuccEpoch));
+        System.out.print(String.format("The average convergence rate is %d\n", aveSuccEpoch));
+        System.out.print(String.format("The Best trail is %d,with the minimum epoch %d\n", minStopEpochIdx+1, minStopEpoch));
 
+        //write the result to a txt file:
+        try{
+            FileWriter fw = new FileWriter("./src/assignment1/momen_0_bestResult_bipolarRep_"+ argUseBipolar+ ".txt");
+            for (int i = 0; i < minStopEpoch; i++) {
+                fw.write(trailEpochError.get(minStopEpochIdx).get(i) + "\n");
+            }
+            fw.close();
+        }catch(IOException e){
+            e.printStackTrace();
+        }
     }
 
 
