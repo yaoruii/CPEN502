@@ -4,6 +4,7 @@ import Sarb.LUTInterface;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class StateActionLookUpTable implements LUTInterface {
 
@@ -39,7 +40,7 @@ public class StateActionLookUpTable implements LUTInterface {
 
     @Override
     public double train(double[] X, double argValue) {
-        return 0;
+        return argValue;
     }
 
     @Override
@@ -58,10 +59,34 @@ public class StateActionLookUpTable implements LUTInterface {
     @Override
     public void initialiseLUT() {
 
+
     }
 
+
+    /**
+     *  A helper method that translates a vector being used to index the look up table
+     *  into an ordinal that can then be used to access the associated look up table element
+     * @param X  The state action vector used to index the LUT
+     * @return  The index where this vector maps to
+     */
     @Override
     public int indexFor(double[] X) {
         return 0;
     }
+
+    public double getValueQ(int stateAction1, int stateAction2, int stateAction3, int stateAction4, int stateAction5){
+        return lut[stateAction1][stateAction2][stateAction3][stateAction4][stateAction5];
+    }
+
+    public double getBestValueQ(int state1, int state2, int state3, int state4){
+        double[] allAvailable = lut[state1][state2][state3][state4];
+        double bestQ = allAvailable[0];
+        for(int i = 1; i<allAvailable.length; i++){
+            bestQ = Math.max(bestQ, allAvailable[i]);
+        }
+        return bestQ;
+
+    }
+
+
 }
