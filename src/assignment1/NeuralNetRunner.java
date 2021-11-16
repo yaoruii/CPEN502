@@ -87,7 +87,7 @@ public class NeuralNetRunner {
             int stopepoch = runner.train(i, epoch, trailEpochError);
             if (stopepoch != -1) {
                 //reach the target error:
-                System.out.print(String.format("---- %d trail training stops in epoch %d\n", i+1, stopepoch));//change i to i+1 for humansense
+                System.out.print(String.format("---- %d trail training stops in epoch %d\n", i+1, stopepoch));
                 totalSuccEpoch += stopepoch;
                 if(minStopEpoch>stopepoch){
                     minStopEpoch = stopepoch;
@@ -101,7 +101,7 @@ public class NeuralNetRunner {
         }
         System.out.print("---------------- SUMMARY---------------\n");
         if (totalSuccTrail > 0) aveSuccEpoch = totalSuccEpoch / totalSuccTrail;
-        System.out.print(String.format("The average convergence  epoch is %d\n", aveSuccEpoch));
+        System.out.print(String.format("The average convergence epoch is %d\n", aveSuccEpoch));
         System.out.print(String.format("The Best trail is %d,with the minimum epoch %d\n", minStopEpochIdx+1, minStopEpoch));
 
         //write the result to a txt file:
