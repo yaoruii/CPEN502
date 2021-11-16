@@ -74,7 +74,7 @@ public class NeuralNetRunner {
                 4,
                 1,
                 0.2,
-                0.0,
+                0.9,
                 lower,
                 upper,
                 argUseBipolar,
@@ -87,7 +87,7 @@ public class NeuralNetRunner {
             int stopepoch = runner.train(i, epoch, trailEpochError);
             if (stopepoch != -1) {
                 //reach the target error:
-                System.out.print(String.format("---- %d trail training stops in epoch %d\n", i, stopepoch));
+                System.out.print(String.format("---- %d trail training stops in epoch %d\n", i+1, stopepoch));//change i to i+1 for humansense
                 totalSuccEpoch += stopepoch;
                 if(minStopEpoch>stopepoch){
                     minStopEpoch = stopepoch;
@@ -96,17 +96,17 @@ public class NeuralNetRunner {
                 totalSuccTrail++;
             } else {
                 //can not reach the target error:
-                System.out.print(String.format("---- %d trail training can not reach target error\n", i));
+                System.out.print(String.format("---- %d trail training can not reach target error\n", i+1));
             }
         }
         System.out.print("---------------- SUMMARY---------------\n");
         if (totalSuccTrail > 0) aveSuccEpoch = totalSuccEpoch / totalSuccTrail;
-        System.out.print(String.format("The average convergence rate is %d\n", aveSuccEpoch));
+        System.out.print(String.format("The average convergence  epoch is %d\n", aveSuccEpoch));
         System.out.print(String.format("The Best trail is %d,with the minimum epoch %d\n", minStopEpochIdx+1, minStopEpoch));
 
         //write the result to a txt file:
         try{
-            FileWriter fw = new FileWriter("./src/assignment1/momen_0_bestResult_bipolarRep_"+ argUseBipolar+ ".txt");
+            FileWriter fw = new FileWriter("./src/assignment1/momen_0.9_bestResult_bipolarRep_"+ argUseBipolar+ ".txt");
             for (int i = 0; i < minStopEpoch; i++) {
                 fw.write(trailEpochError.get(minStopEpochIdx).get(i) + "\n");
             }
