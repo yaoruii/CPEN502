@@ -3,6 +3,7 @@ import LUT.StateActionLookUpTable;
 import robocode.*;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.*;
 import java.awt.*;
@@ -68,7 +69,7 @@ public class MyTankRob extends AdvancedRobot {
     private double instanceGoodReward = 1.0;
     private double terminalGoodReward = 2.0;
 
-    static String logFilename = "myTankRobot-logfile.log";
+    static String logFilename = "myTankRobot-logfile.txt";
     static PrintStream logger = null;
 
     //get the centre of the board:
@@ -94,8 +95,10 @@ public class MyTankRob extends AdvancedRobot {
         //to do
         if(logger == null){
             try {
-                logger = new PrintStream(getDataFile(logFilename));
+                logger = new PrintStream(new RobocodeFileOutputStream(getDataFile(logFilename)));
             } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
             logger.printf("gamma,   %2.2f\n", gamma);
@@ -158,7 +161,6 @@ public class MyTankRob extends AdvancedRobot {
                             break;
                         }
                     }
-                    System.out.println(System.currentTimeMillis() + " action over");
                     //core code
                     //update previous q:
                     double[] previousIndex = new double[]{
@@ -324,13 +326,11 @@ public class MyTankRob extends AdvancedRobot {
 
         else{
             winningRate = ((double) numWins / numRoundsTo100) * 100;
-            System.out.println("Winning rate: " + winningRate);
             logger.printf("Winning rate: %2.1f\n", winningRate);
             logger.flush();
             numRoundsTo100 = 0;
             numWins = 0;
         }
-
 
 
     }

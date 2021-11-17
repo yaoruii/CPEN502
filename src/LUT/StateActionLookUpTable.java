@@ -140,7 +140,7 @@ public class StateActionLookUpTable implements LUTInterface {
      * Initialise the look up table to all zeros.
      */
     @Override
-    public void initialise
+    public void initialiseLUT
       () {
 
         for(int A = 0; A < numEnergyDim1; A += 1){
