@@ -2,8 +2,10 @@ package Robot;
 import LUT.StateActionLookUpTable;
 import robocode.*;
 
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
+import java.lang.*;
 import java.awt.*;
-import java.sql.SQLOutput;
 import java.util.Random;
 
 public class MyTankRob extends AdvancedRobot {
@@ -27,7 +29,7 @@ public class MyTankRob extends AdvancedRobot {
     private Energy currMyEnergy = Energy.HIGH;
     private Energy currEnemyEnergy = Energy.HIGH;
     private Distance currDistance2Enemy = Distance.NEAR;
-    private Distance currDistance2Centre = Distance.NEAR;//？
+    private Distance currDistance2Centre = Distance.NEAR;
     private Action currAction = Action.FORWARD;
 
     private Energy preMyEnergy = Energy.LOW;
@@ -66,6 +68,9 @@ public class MyTankRob extends AdvancedRobot {
     private double instanceGoodReward = 1.0;
     private double terminalGoodReward = 2.0;
 
+    static String logFilename = "myTankRobot-logfile.log";
+    static PrintStream logger = null;
+
     //get the centre of the board:
     int xMid = 0;
     int yMid = 0;
@@ -87,32 +92,40 @@ public class MyTankRob extends AdvancedRobot {
 
         //creat the log:
         //to do
+        if(logger == null){
+            try {
+                logger = new PrintStream(getDataFile(logFilename));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            logger.printf("gamma,   %2.2f\n", gamma);
+            logger.printf("alpha,   %2.2f\n", alpha);
+            logger.printf("epsilon, %2.2f\n", epsilon);
+            logger.printf("instanceBadReward, %2.2f\n", instanceBadReward);
+            logger.printf("terminalBadReward, %2.2f\n", terminalBadReward);
+            logger.printf("instanceGoodReward, %2.2f\n", instanceGoodReward);
+            logger.printf("terminalGoodReward, %2.2f\n\n", terminalGoodReward);
+        }
 
 
         //begin the battle until one party is dead:
         while(true){
             //to do?
+            //
             if(totalNumRounds > 40000) epsilon = 0.0;
 
             switch (currOperationMode) {
-                //?
                 case SCAN:
                     currReward = 0.0;
                     turnRadarLeft(360);
                     break;
                 case PERFORM_ACTION:
                     //core code: get current action
-                    if (isOffPolicy) {
-                        if (Math.random() <= epsilon) {
-                            currAction = selectRandomAction();
-                        } else {
-                            currAction = selectGreedyAction(myEnergy, enemyEnergy, enemyDistance, distance2Centre(myX, myY, xMid, yMid));
-                        }
+                    if (Math.random() <= epsilon) {
+                        currAction = selectRandomAction();
                     } else {
-                        //do nothing
-
+                        currAction = selectGreedyAction(myEnergy, enemyEnergy, enemyDistance, distance2Centre(myX, myY, xMid, yMid));
                     }
-
                     switch (currAction) {
                         case FORWARD: {
                             setTurnRight(enemyBearing);
@@ -124,10 +137,8 @@ public class MyTankRob extends AdvancedRobot {
                             turnGunRight(getHeading() - getGunHeading() + enemyBearing);
                             fire(3);
                             execute();
-                            //current energy ?
                             break;
                         }
-
                         case RETREAT: {
                             setTurnRight(enemyBearing + 180);
                             setAhead(100);
@@ -157,11 +168,9 @@ public class MyTankRob extends AdvancedRobot {
                             preDistance2Centre.ordinal(),
                             preAction.ordinal()
                     };
-                    myLUT.train(previousIndex, computeQ(currReward, isOffPolicy));
+                    myLUT.train(previousIndex, computeQ(currReward));
                     currOperationMode = OperationMode.SCAN;
             }
-
-
         }
     }
     @Override
@@ -175,64 +184,54 @@ public class MyTankRob extends AdvancedRobot {
         myY = getY();
         myEnergy = getEnergy();
 
-        //to do
         /**
          * current state become previous state:
          */
+        preAction = currAction;
+
+        preMyEnergy = currMyEnergy;
+        preEnemyEnergy = currEnemyEnergy;
+        preDistance2Enemy = currDistance2Enemy;
+        preDistance2Centre = currDistance2Centre;
 
         /**
          * get current state:
          */
+        currMyEnergy = getEneryEnum(getEnergy());
+        currEnemyEnergy = getEneryEnum(e.getEnergy());
+        currDistance2Enemy = getDistanceEnum(e.getDistance());
+        currDistance2Centre = getDistanceEnum(distance2Centre(myX, myY, xMid, yMid));
 
         //become perform mode:
         currOperationMode = OperationMode.PERFORM_ACTION;
-        System.out.println(System.currentTimeMillis()+ " scan over");
-
-
-
 
     }
 
-    private double computeQ( double currReward, boolean isOffPolicy){
-        System.out.println(System.currentTimeMillis()+" action over, need to finish scan");
+    private double computeQ( double currReward){
         double previousQ = myLUT.getValueQ(preMyEnergy.ordinal(),
                 preEnemyEnergy.ordinal(),
                 preDistance2Enemy.ordinal(),
                 preDistance2Centre.ordinal(),
                 preAction.ordinal());
-        //st+1, at+1
-        ;
-
         double bestQ = myLUT.getBestValueQ(currMyEnergy.ordinal(),
                 currEnemyEnergy.ordinal(),
                 currDistance2Enemy.ordinal(),
                 currDistance2Centre.ordinal());
+        double currentQ = myLUT.getValueQ(currMyEnergy.ordinal(),
+                currEnemyEnergy.ordinal(),
+                currDistance2Enemy.ordinal(),
+                currDistance2Centre.ordinal(),
+                currAction.ordinal()
+        );
 
         double updatedPreviousQ = 0;
         if(isOffPolicy){
 //            bestQ;
+            updatedPreviousQ = previousQ + alpha*(currReward + gamma*bestQ-previousQ);
         }else{
-            //st+1, at+1 => currentQ
-            //st+1, at   => currentQ ?
-            if(Math.random() <= epsilon){
-                currAction = selectRandomAction();
-            }else{
-                currAction = selectGreedyAction(myEnergy, enemyEnergy, enemyDistance, distance2Centre(myX, myY, xMid,yMid));
-            }
-            double currentQ = myLUT.getValueQ(currMyEnergy.ordinal(),
-                    currEnemyEnergy.ordinal(),
-                    currDistance2Enemy.ordinal(),
-                    currDistance2Centre.ordinal(),
-                    currAction.ordinal()
-            );
-//            currentQ
-
-
-
+            updatedPreviousQ = previousQ + alpha*(currReward + gamma*currentQ - previousQ);
         }
         return updatedPreviousQ;
-
-
     }
 
     @Override
@@ -354,6 +353,30 @@ public class MyTankRob extends AdvancedRobot {
     private double distance2Centre(double x1, double y1, double centreX, double centreY){
         this.centreDistance = Math.sqrt(Math.pow(x1 - centreX, 2) + Math.pow(y1 - centreY, 2));
         return this.centreDistance;
+    }
+
+    private Energy getEneryEnum(double energy){
+        Energy energyEnum;
+        if(energy <= 33){
+            energyEnum = Energy.LOW;
+        }else if(energy <=66){
+            energyEnum = Energy.MEDIUM;
+        }else{
+            energyEnum = Energy.HIGH;
+        }
+        return energyEnum;
+    }
+
+    private Distance getDistanceEnum(double distance){
+        Distance distanceEnum;
+        if(distance <= 100){
+            distanceEnum = Distance.VERY_CLOSE;
+        }else if(distance <= 400){
+            distanceEnum = Distance.NEAR;
+        }else{
+            distanceEnum = Distance.FAR;
+        }
+        return distanceEnum;
     }
 
 

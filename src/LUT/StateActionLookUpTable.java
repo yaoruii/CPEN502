@@ -33,13 +33,31 @@ public class StateActionLookUpTable implements LUTInterface {
 
     }
 
+
+    /**
+     * @param X The input vector. An array of doubles.
+     * @return The value returned by th LUT or NN for this input vector
+     */
     @Override
     public double outputFor(double[] X) {
-        return 0;
+        int idx1 = (int) X[0];
+        int idx2 = (int) X[1];
+        int idx3 = (int) X[2];
+        int idx4 = (int) X[3];
+        int idx5 = (int) X[4];
+        return lut[idx1][idx2][idx3][idx4][idx5];
     }
 
     @Override
     public double train(double[] X, double argValue) {
+        int idx1 = (int) X[0];
+        int idx2 = (int) X[1];
+        int idx3 = (int) X[2];
+        int idx4 = (int) X[3];
+        int idx5 = (int) X[4];
+
+        lut[idx1][idx2][idx3][idx4][idx5] = argValue;
+
         return argValue;
     }
 
@@ -122,7 +140,20 @@ public class StateActionLookUpTable implements LUTInterface {
      * Initialise the look up table to all zeros.
      */
     @Override
-    public void initialiseLUT() {
+    public void initialise
+      () {
+
+        for(int A = 0; A < numEnergyDim1; A += 1){
+            for(int B = 0; B < numEnergyDim2; B += 1){
+                for(int C = 0; C < numDistanceDim1; C += 1){
+                    for(int D = 0; D < numDistanceDim2; D += 1){
+                        for(int E = 0; E < numActionDim; E += 1){
+                            lut[A][B][C][D][E] = Math.random();
+                        }
+                    }
+                }
+            }
+        }
     }
 
 
