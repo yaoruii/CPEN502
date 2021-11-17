@@ -1,9 +1,9 @@
 package LUT;
 
 import Sarb.LUTInterface;
+import robocode.RobocodeFileOutputStream;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.Arrays;
 
 public class StateActionLookUpTable implements LUTInterface {
@@ -63,19 +63,86 @@ public class StateActionLookUpTable implements LUTInterface {
 
     @Override
     public void save(File argFile) {
+        PrintStream file = null;
 
+        try {
+            file = new PrintStream(new RobocodeFileOutputStream(argFile));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        file.println(numEnergyDim1 * numEnergyDim2 * numDistanceDim1 * numDistanceDim2 * numActionDim);
+        file.println(5);
+
+        for (int A = 0; A < numEnergyDim1; A++) {
+            for (int B = 0; B < numEnergyDim2; B++) {
+                for (int C = 0; C < numDistanceDim1; C++) {
+                    for (int D = 0; D < numDistanceDim2; D++) {
+                        for (int E = 0; E < numActionDim; E++) {
+                            String row = String.format("%d, %d, %d, %d, %d, %2.5f, %d",
+                                    A, B, C, D, E,
+                                    lut[A][B][C][D][E],
+                                    numOfVisits[A][B][C][D][E]
+                            );
+                            file.println(row);
+                        }
+                    }
+                }
+            }
+        }
+        file.close();
     }
 
     @Override
     public void load(String argFileName) throws IOException {
+        FileInputStream fileInputStream = new FileInputStream(argFileName);
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fileInputStream));
+        int expectedNumOfRows = numEnergyDim1 * numEnergyDim2 * numDistanceDim1 * numDistanceDim2 * numActionDim;
+        int actualNumOfRows = Integer.valueOf(bufferedReader.readLine());
+        int actualNumOfDimensions = Integer.valueOf(bufferedReader.readLine());
 
+        if (actualNumOfRows != expectedNumOfRows || actualNumOfDimensions != 5) {
+            System.out.printf("Actual numbers of rows and dimensions are %s and %s, while %s and 5 are expected",
+                    actualNumOfRows, actualNumOfDimensions, expectedNumOfRows);
+            bufferedReader.close();
+            throw new IOException();
+        }
+
+        for (int A = 0; A < numEnergyDim1; A++) {
+            for (int B = 0; B < numEnergyDim2; B++) {
+                for (int C = 0; C < numDistanceDim1; C++) {
+                    for (int D = 0; D < numDistanceDim2; D++) {
+                        for (int E = 0; E < numActionDim; E++) {
+
+                            String title = bufferedReader.readLine();
+                            String[] arr = title.split(",");
+
+//                            int energyDim1 = Integer.parseInt(arr[0]);
+//                            int energyDim2 = Integer.parseInt(arr[1]);
+//                            int distanceDim1 = Integer.parseInt(arr[2]);
+//                            int distanceDim2 = Integer.parseInt(arr[3]);
+//                            int actionDim = Integer.parseInt(arr[4]);
+
+                            int Q = Integer.parseInt(arr[5]);
+                            int visit = Integer.parseInt(arr[6]);
+
+                            lut[A][B][C][D][E] = Q;
+                            numOfVisits[A][B][C][D][E] = visit;
+                        }
+                    }
+                }
+            }
+        }
+        bufferedReader.close();
     }
 
     /**
      * Initialise the look up table to all zeros.
      */
     @Override
-    public void initialiseLUT() {
+    public void initialise
+      () {
+
         for(int A = 0; A < numEnergyDim1; A += 1){
             for(int B = 0; B < numEnergyDim2; B += 1){
                 for(int C = 0; C < numDistanceDim1; C += 1){

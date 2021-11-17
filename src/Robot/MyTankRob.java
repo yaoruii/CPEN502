@@ -261,14 +261,76 @@ public class MyTankRob extends AdvancedRobot {
 
     @Override
     public void onWin(WinEvent e){
-        //to do
+
+        //save LUT
+        try {
+            myLUT.save(getDataFile("myLUT.dat"));//make sure to use the same filename?
+        } catch (Exception e) {
+            System.out.println("Save Error!" + e);
+        }
+        currReward = terminalGoodReward;
+        double[] index = new double[]{
+                preMyEnergy.ordinal(),
+                preEnemyEnergy.ordinal(),
+                preDistance2Enemy.ordinal(),
+                preDistance2Centre.ordinal(),
+                preAction.ordinal()
+        };
+        myLUT.train(index,computeQ(currReward,isOffPolicy));
+
+        if(numRoundsTo100 < 100){
+            numRoundsTo100 += 1;
+            totalNumRounds += 1;
+            numWins += 1;
+        }
+        else{
+            winningRate = ((double) numWins / numRoundsTo100) * 100;
+            logger.printf("Winning rate: %2.1f\n", winningRate);//??
+            logger.flush();//??
+            numRoundsTo100 = 0;
+            numWins = 0;
+        }
+
+
+
 
 
     }
 
     @Override
     public void onDeath(DeathEvent e){
-        //to do
+
+        //save LUT
+        try {
+            myLUT.save(getDataFile("myLUT.dat"));
+        } catch (Exception e) {
+            System.out.println("Save Error!" + e);
+        }
+
+        currReward = terminalBadReward;
+        double[] index = new double[]{
+                preMyEnergy.ordinal(),
+                preEnemyEnergy.ordinal(),
+                preDistance2Enemy.ordinal(),
+                preDistance2Centre.ordinal(),
+                preAction.ordinal()
+        };
+        myLUT.train(index,computeQ(currReward,isOffPolicy));
+
+        if(numRoundsTo100 < 100){
+            numRoundsTo100 += 1;
+            totalNumRounds += 1;
+        }
+
+        else{
+            winningRate = ((double) numWins / numRoundsTo100) * 100;
+            System.out.println("Winning rate: " + winningRate);
+            logger.printf("Winning rate: %2.1f\n", winningRate);
+            logger.flush();
+            numRoundsTo100 = 0;
+            numWins = 0;
+        }
+
 
 
     }
