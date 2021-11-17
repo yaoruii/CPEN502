@@ -168,7 +168,7 @@ public class MyTankRob extends AdvancedRobot {
                             preDistance2Centre.ordinal(),
                             preAction.ordinal()
                     };
-                    myLUT.train(previousIndex, computeQ(currReward));
+                    myLUT.train(previousIndex, computeQ(currReward, isOffPolicy));
                     currOperationMode = OperationMode.SCAN;
             }
         }
@@ -207,7 +207,7 @@ public class MyTankRob extends AdvancedRobot {
 
     }
 
-    private double computeQ( double currReward){
+    private double computeQ( double currReward, boolean isOffPolicy){
         double previousQ = myLUT.getValueQ(preMyEnergy.ordinal(),
                 preEnemyEnergy.ordinal(),
                 preDistance2Enemy.ordinal(),
@@ -265,8 +265,8 @@ public class MyTankRob extends AdvancedRobot {
         //save LUT
         try {
             myLUT.save(getDataFile("myLUT.dat"));//make sure to use the same filename?
-        } catch (Exception e) {
-            System.out.println("Save Error!" + e);
+        } catch (Exception exception) {
+            System.out.println("Save Error!" + exception);
         }
         currReward = terminalGoodReward;
         double[] index = new double[]{
@@ -303,8 +303,8 @@ public class MyTankRob extends AdvancedRobot {
         //save LUT
         try {
             myLUT.save(getDataFile("myLUT.dat"));
-        } catch (Exception e) {
-            System.out.println("Save Error!" + e);
+        } catch (Exception exception) {
+            System.out.println("Save Error!" + exception);
         }
 
         currReward = terminalBadReward;
