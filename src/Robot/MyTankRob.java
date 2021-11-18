@@ -25,6 +25,8 @@ public class MyTankRob extends AdvancedRobot {
     static private int numWins = 0;
     static double winningRate = 0.0;
 
+    static int gap = 100;
+
     private static double currReward = 0.0;
 
     private Energy currMyEnergy = Energy.HIGH;
@@ -55,13 +57,13 @@ public class MyTankRob extends AdvancedRobot {
 
     //discount factor and learning rate used by RL:
     private double gamma = 0.90;//discount factor
-    private double alpha = 0.70;//learning rate
-    private double epsilonInit = 0.65;
+    private double alpha = 0.1;//learning rate
+    private double epsilonInit = 0.1;
     private double epsilon = epsilonInit;
 
 
     private boolean isInstance = true;// true: Take intermediate Bonus  into account, false: Only consider the terminal Bonus
-    private boolean isOffPolicy = true;//true: off-policy, false: on-policy
+    private boolean isOffPolicy = false;//true: off-policy, false: on-policy
 
     //defined the rewards:
     private double instanceBadReward = -0.25;
@@ -69,7 +71,7 @@ public class MyTankRob extends AdvancedRobot {
     private double instanceGoodReward = 1.0;
     private double terminalGoodReward = 2.0;
 
-    static String logFilename = "myTankRobot-logfile.txt";
+    static String logFilename = "myTankRobot-logfile4.txt";
     static PrintStream logger = null;
 
     //get the centre of the board:
@@ -127,7 +129,7 @@ public class MyTankRob extends AdvancedRobot {
                     if (Math.random() <= epsilon) {
                         currAction = selectRandomAction();
                     } else {
-                        currAction = selectGreedyAction(myEnergy, enemyEnergy, enemyDistance, distance2Centre(myX, myY, xMid, yMid));
+                        currAction = selectGreedyAction(currMyEnergy.ordinal(), currEnemyEnergy.ordinal(), currDistance2Enemy.ordinal(), currDistance2Centre.ordinal());
                     }
                     switch (currAction) {
                         case FORWARD: {
@@ -280,13 +282,13 @@ public class MyTankRob extends AdvancedRobot {
         };
         myLUT.train(index,computeQ(currReward,isOffPolicy));
 
-        if(numRoundsTo100 < 100){
+        if(numRoundsTo100 < gap){
             numRoundsTo100 += 1;
             totalNumRounds += 1;
             numWins += 1;
         }
         else{
-            winningRate = ((double) numWins / numRoundsTo100) * 100;
+            winningRate = ((double) numWins / gap) * 100;
             logger.printf("Winning rate: %2.1f\n", winningRate);//??
             logger.flush();//??
             numRoundsTo100 = 0;
@@ -319,13 +321,12 @@ public class MyTankRob extends AdvancedRobot {
         };
         myLUT.train(index,computeQ(currReward,isOffPolicy));
 
-        if(numRoundsTo100 < 100){
+        if(numRoundsTo100 < gap){
             numRoundsTo100 += 1;
             totalNumRounds += 1;
         }
-
         else{
-            winningRate = ((double) numWins / numRoundsTo100) * 100;
+            winningRate = ((double) numWins / gap) * 100;
             logger.printf("Winning rate: %2.1f\n", winningRate);
             logger.flush();
             numRoundsTo100 = 0;
@@ -343,10 +344,17 @@ public class MyTankRob extends AdvancedRobot {
         return Action.values()[selectedIndex];
     }
 
-    private Action selectGreedyAction(double myEnergy,double enemyEnergy, double enemyDistance, double centreDistance){
-        //to do
-        return Action.values()[0];
-
+    private Action selectGreedyAction( int myEnergy,int enemyEnergy, int enemyDistance, int centreDistance){
+        double bestQ = -1;
+        Action bestAction = null;
+        for(Action action: Action.values()){
+            double currQ = myLUT.getValueQ(myEnergy,enemyEnergy,enemyDistance,centreDistance,action.ordinal());
+            if(bestQ <currQ){
+                bestQ = currQ;
+                bestAction = action;
+            }
+        }
+        return bestAction;
 
     }
 
@@ -378,13 +386,4 @@ public class MyTankRob extends AdvancedRobot {
         }
         return distanceEnum;
     }
-
-
-
-
-
-
-
-
-
 }
