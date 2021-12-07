@@ -78,7 +78,7 @@ public class MyRobotV2 extends AdvancedRobot{
     //discount factor and learning rate used by RL:
     private double gamma = 0.90;//discount factor
     private double alpha = 0.1;//learning rate
-    private double epsilonInit = 0.75;
+    private double epsilonInit = 0.2;
     private double epsilon = epsilonInit;
 
 
@@ -91,7 +91,7 @@ public class MyRobotV2 extends AdvancedRobot{
     private double instanceGoodReward = 1.0;
     private double terminalGoodReward = 2.0;
 
-    static String logFilename = "myTankRobot-logfile_Winning_rate_NN.txt";
+    static String logFilename = "myTankRobot-logfile_Winning_rate_e=0.05_NN.txt";
     static PrintStream logger = null;
 
     //get the centre of the board:
