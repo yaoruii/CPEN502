@@ -1,6 +1,7 @@
 package assignment3;
 import assignment1.*;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,7 +16,7 @@ public class NeuralNetRunnerV2 {
         int argB = 1;
         int inputNum = 5;
         int outputNum = 1;
-        int hiddenNum = 36;
+        int hiddenNum = 6;
 
         int energyNum = 3; // Number of types of HP
         int distanceNum = 3; // Number of types of distance
@@ -25,7 +26,7 @@ public class NeuralNetRunnerV2 {
 
         double learningRate = 0.2;
         double momentum = 0.9;
-        double acceptError = 0.01;
+        double acceptError = 0.05;//5000 -> 5:
         double minOutput, maxOutput;
 
         boolean useBipolar = true;
@@ -42,33 +43,49 @@ public class NeuralNetRunnerV2 {
         LUT.load2NN("/Users/jun/Desktop/UBC/2021W1/502/CPEN502/src/assignment3/myLUT.dat", inputArray, expectOutput);
 
         //normalizeInput(inputArray, inputMaxArray, argA, argB, numExpectedRows, numExpectedCols);
-        maxOutput = getMaxOutput(expectOutput, numExpectedRows);
-        minOutput = getMinOutput(expectOutput, numExpectedRows);
-        normalizeOutput(expectOutput, maxOutput, minOutput, argA, argB, numExpectedRows);
+//        maxOutput = getMaxOutput(expectOutput, numExpectedRows);
+//        minOutput = getMinOutput(expectOutput, numExpectedRows);
+//        normalizeOutput(expectOutput, maxOutput, minOutput, argA, argB, numExpectedRows);
 
 
-        NeuralNet neuralNet = new NeuralNet(inputNum, hiddenNum, outputNum,learningRate, momentum,
-                argA, argB,useBipolar,-0.1, 0.1);
+
+//        for(double learningRateite = learningRate;learningRateite<0.5; learningRateite += 0.05 ){
+          for(int hiddenNumite = hiddenNum; hiddenNumite<24; hiddenNumite +=6){
+            NeuralNet neuralNet = new NeuralNet(inputNum, hiddenNum, outputNum,learningRate, momentum,
+                    argA, argB,useBipolar,-0.5, 0.5);
 
 
-        neuralNet.initializeWeights();
-        neuralNet.zeroWeights();
+            neuralNet.initializeWeights();
+            neuralNet.zeroWeights();
 
-        int epoch = 0;
-        double error = 0.0;
-
-        while (epoch == 0 || error > acceptError) {
+            int epoch = 0;
+            double error = 0.0;
+            FileWriter fw = new FileWriter("./src/assignment3/hiddennum"+ hiddenNumite + ".txt");
+            while (epoch == 0 || error > acceptError) {
 //        while (epoch < maxEpoch) { /* Used when testing the hyper parameters */
-            error = 0.0;
-            /* The for loop indicates the algorithm for one epoch */
-            for (int index = 0; index < inputArray.length; index++) {
-                double[] input = inputArray[index]; // switch between binary test and bipolar test here
-                double output = expectOutput[index]; //switch between binary test and bipolar test here
-                error += neuralNet.train(input, output);
+                error = 0.0;
+                /* The for loop indicates the algorithm for one epoch */
+                for (int index = 0; index < 10; index++) {
+                    double[] input = inputArray[index]; // switch between binary test and bipolar test here
+                    double output = expectOutput[index]; //switch between binary test and bipolar test here
+                    error += neuralNet.train(input, output);
+                }
+                //write the result to a txt file:
+                try{
+//                for (int i = 0; i < minStopEpoch; i++) {
+                    fw.write(error+ "\n");
+//                }
+
+                }catch(IOException e){
+                    e.printStackTrace();
+                }
+                epoch += 1;
+                error = error;
+                //System.out.println(error);
+                double rms = Math.pow((2*error/10), 0.5);
+//            System.out.println("Error at epoch " + epoch + " is " + error);
             }
-            epoch += 1;
-            error = error;
-            //System.out.println("Error at epoch " + epoch + " is " + error);
+            fw.close();
         }
 
     }

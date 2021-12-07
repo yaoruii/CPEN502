@@ -95,7 +95,7 @@ public class NeuralNet implements NeuralNetInterface {
 
     }
 
-    ;
+
 
     /**
      * This method implements a bipolar sigmoid of the input X
@@ -116,6 +116,7 @@ public class NeuralNet implements NeuralNetInterface {
      */
     @Override
     public double customSigmoid(double x) {
+        //1-(-1) = 2
         return (argB-argA)/(1+Math.exp(-x))+argA;
     }
 
@@ -174,6 +175,7 @@ public class NeuralNet implements NeuralNetInterface {
 
         //calculate the output for hidder layer and add bias node for hidder layer
         for (int i = 0; i < argNumHidden; i++){
+            hidden2Output[i] = 0;
             for(int j = 0; j <= argNumInputs; j++){
                 hidden2Output[i] += input2Hidden[j] * input2HiddenWeight[j][i];
             }
@@ -183,12 +185,12 @@ public class NeuralNet implements NeuralNetInterface {
 
         //calculate nerualnet's output
         for (int i = 0; i< argNumOutput;i++){
+            netOutput[i] = 0;
             for (int j = 0; j <= argNumHidden;j++){
                 netOutput[i] += hidden2Output[j] * hidden2OutputWeight[j][i];
             }
             netOutput[i] = customSigmoid(netOutput[i]);
         }
-
         return netOutput[0];//only the first output in our case when numoutput=1
     }
 
@@ -203,10 +205,10 @@ public class NeuralNet implements NeuralNetInterface {
     @Override
     public double train(double[] X, double argValue) {
         double error = 0;
-        System.out.println("X is " + X[0] + X[1] + X[2] + X[3] + X[4] );
+        //System.out.println("X is " + X[0] + X[1] + X[2] + X[3] + X[4] );
         double trainOutput = outputFor(X);
-        System.out.println("trainOutput is " + trainOutput);
-        System.out.println("argValue is "+ argValue);
+//        System.out.println("trainOutput is " + trainOutput);//-1
+//        System.out.println("argValue is "+ argValue);
         error += errorRate*Math.pow((trainOutput-argValue), 2);
         updateWeights(trainOutput, argValue);
         return error;

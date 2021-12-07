@@ -23,13 +23,13 @@ public class MyRobotV2 extends AdvancedRobot{
             Distance.values().length,
             Action.values().length
     );
-    private static double learningRate = 0.1;
+    private static double learningRate = 0.2;
     public static double momentum = 0.9;
     public static int argA = -1;
     public static int argB = 1;
     public static int inputNum = 5; // MyHp, EnemyHp, Distance2Enemy, Distance2Centre, Action
     public static int outputNum = 1;
-    public static int hiddenNum = 9;
+    public static int hiddenNum = 6;
     public static int actionType = Action.values().length;
 
     public static double error = 0.0;

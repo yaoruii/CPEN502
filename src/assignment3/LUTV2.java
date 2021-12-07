@@ -35,7 +35,8 @@ public class LUTV2 extends StateActionLookUpTable{
         FileInputStream inputFile = new FileInputStream(fileName);
         BufferedReader inputReader = new BufferedReader(new InputStreamReader( inputFile ));
 
-        int numExpectedRows = numEnergyDim1 * numEnergyDim2 * numDistanceDim1* numDistanceDim2 * numActionDim;
+//        int numExpectedRows = numEnergyDim1 * numEnergyDim2 * numDistanceDim1* numDistanceDim2 * numActionDim;
+        int numExpectedRows = 405;
 
         // Check the number of rows is compatible
         int numRows = Integer.valueOf( inputReader.readLine() );
@@ -58,6 +59,7 @@ public class LUTV2 extends StateActionLookUpTable{
                     for (int d = 0; d < numDistanceDim2; d++) {
                         for (int e = 0; e < numActionDim; e++) {
                             int col = 0;
+                            //if(col<6)continue;
                             // Read line formatted like this: <e,d,e2,d2,a,q,visits\n>
                             String line = inputReader.readLine();
                             String tokens[] = line.split(", ");
