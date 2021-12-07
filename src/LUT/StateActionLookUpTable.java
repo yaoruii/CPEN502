@@ -10,6 +10,63 @@ public class StateActionLookUpTable implements LUTInterface {
 
     private double[][][][][] lut;
     private int[][][][][] numOfVisits;
+
+    public double[][][][][] getLut() {
+        return lut;
+    }
+
+    public void setLut(double[][][][][] lut) {
+        this.lut = lut;
+    }
+
+    public int[][][][][] getNumOfVisits() {
+        return numOfVisits;
+    }
+
+    public void setNumOfVisits(int[][][][][] numOfVisits) {
+        this.numOfVisits = numOfVisits;
+    }
+
+    public int getNumEnergyDim1() {
+        return numEnergyDim1;
+    }
+
+    public void setNumEnergyDim1(int numEnergyDim1) {
+        this.numEnergyDim1 = numEnergyDim1;
+    }
+
+    public int getNumEnergyDim2() {
+        return numEnergyDim2;
+    }
+
+    public void setNumEnergyDim2(int numEnergyDim2) {
+        this.numEnergyDim2 = numEnergyDim2;
+    }
+
+    public int getNumDistanceDim1() {
+        return numDistanceDim1;
+    }
+
+    public void setNumDistanceDim1(int numDistanceDim1) {
+        this.numDistanceDim1 = numDistanceDim1;
+    }
+
+    public int getNumDistanceDim2() {
+        return numDistanceDim2;
+    }
+
+    public void setNumDistanceDim2(int numDistanceDim2) {
+        this.numDistanceDim2 = numDistanceDim2;
+    }
+
+    public int getNumActionDim() {
+        return numActionDim;
+    }
+
+    public void setNumActionDim(int numActionDim) {
+        this.numActionDim = numActionDim;
+    }
+
     private int numEnergyDim1;
     private int numEnergyDim2;
     private int numDistanceDim1;
@@ -57,7 +114,7 @@ public class StateActionLookUpTable implements LUTInterface {
         int idx5 = (int) X[4];
 
         lut[idx1][idx2][idx3][idx4][idx5] = argValue;
-
+        numOfVisits[idx1][idx2][idx3][idx4][idx5] ++;
         return argValue;
     }
 

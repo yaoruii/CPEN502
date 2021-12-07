@@ -138,7 +138,6 @@ public class NeuralNet implements NeuralNetInterface {
             for(int j = 0; j<netOutputSize; j++){
                 hidden2OutputWeight[i][j] = random.nextDouble()*(randomWeightUpper - randomWeightLower) + randomWeightLower;
             }
-
         }
 
 
@@ -151,16 +150,14 @@ public class NeuralNet implements NeuralNetInterface {
     public void zeroWeights() {
         for(int i = 0; i<input2HiddenSize; i++){
             for(int j = 0; j<hidden2OutputSize-1; j++){
-                input2HiddenWeight[i][j] = 0;
+                input2HiddenWeightChange[i][j] = 0;
             }
         }
         for(int i = 0; i< hidden2OutputSize; i++){
             for(int j = 0; j<netOutputSize; j++){
-                hidden2OutputWeight[i][j] = 0;
+                hidden2OutputWeightChange[i][j] = 0;
             }
-
         }
-
     }
 
     /**
@@ -206,7 +203,10 @@ public class NeuralNet implements NeuralNetInterface {
     @Override
     public double train(double[] X, double argValue) {
         double error = 0;
+        System.out.println("X is " + X[0] + X[1] + X[2] + X[3] + X[4] );
         double trainOutput = outputFor(X);
+        System.out.println("trainOutput is " + trainOutput);
+        System.out.println("argValue is "+ argValue);
         error += errorRate*Math.pow((trainOutput-argValue), 2);
         updateWeights(trainOutput, argValue);
         return error;
