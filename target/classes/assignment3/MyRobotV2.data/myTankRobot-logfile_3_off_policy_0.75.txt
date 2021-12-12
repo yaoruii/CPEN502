@@ -1,0 +1,13 @@
+gamma,   0.90
+alpha,   0.10
+epsilon, 0.75
+instanceBadReward, -0.25
+terminalBadReward, -0.50
+instanceGoodReward, 1.00
+terminalGoodReward, 2.00
+
+Winning rate: 34.0
+Winning rate: 37.0
+Winning rate: 39.0
+Winning rate: 42.0
+Winning rate: 46.0

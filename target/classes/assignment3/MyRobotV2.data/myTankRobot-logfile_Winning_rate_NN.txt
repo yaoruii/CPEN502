@@ -1,0 +1,77 @@
+gamma,   0.90
+alpha,   0.10
+epsilon, 0.75
+instanceBadReward, -0.25
+terminalBadReward, -0.50
+instanceGoodReward, 1.00
+terminalGoodReward, 2.00
+
+Winning rate: 35.0
+Winning rate: 32.0
+Winning rate: 41.0
+Winning rate: 35.0
+Winning rate: 34.0
+Winning rate: 41.0
+Winning rate: 37.0
+Winning rate: 38.0
+Winning rate: 38.0
+Winning rate: 35.0
+Winning rate: 34.0
+Winning rate: 43.0
+Winning rate: 47.0
+Winning rate: 35.0
+Winning rate: 45.0
+Winning rate: 33.0
+Winning rate: 41.0
+Winning rate: 43.0
+Winning rate: 31.0
+Winning rate: 44.0
+Winning rate: 41.0
+Winning rate: 42.0
+Winning rate: 35.0
+Winning rate: 37.0
+Winning rate: 39.0
+Winning rate: 32.0
+Winning rate: 31.0
+Winning rate: 41.0
+Winning rate: 41.0
+Winning rate: 49.0
+Winning rate: 40.0
+Winning rate: 34.0
+Winning rate: 41.0
+Winning rate: 37.0
+Winning rate: 34.0
+Winning rate: 33.0
+Winning rate: 37.0
+Winning rate: 43.0
+Winning rate: 30.0
+Winning rate: 37.0
+Winning rate: 36.0
+Winning rate: 38.0
+Winning rate: 38.0
+Winning rate: 36.0
+Winning rate: 40.0
+Winning rate: 33.0
+Winning rate: 36.0
+Winning rate: 40.0
+Winning rate: 42.0
+Winning rate: 39.0
+Winning rate: 40.0
+Winning rate: 36.0
+Winning rate: 38.0
+Winning rate: 44.0
+Winning rate: 47.0
+Winning rate: 35.0
+Winning rate: 36.0
+Winning rate: 36.0
+Winning rate: 35.0
+Winning rate: 26.0
+Winning rate: 39.0
+Winning rate: 34.0
+Winning rate: 40.0
+Winning rate: 41.0
+Winning rate: 39.0
+Winning rate: 33.0
+Winning rate: 27.0
+Winning rate: 35.0
+Winning rate: 39.0
