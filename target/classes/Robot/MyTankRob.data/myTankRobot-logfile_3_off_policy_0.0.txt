@@ -1,0 +1,86 @@
+gamma,   0.90
+alpha,   0.10
+epsilon, 0.00
+instanceBadReward, -0.25
+terminalBadReward, -0.50
+instanceGoodReward, 1.00
+terminalGoodReward, 2.00
+
+Winning rate: 12.0
+Winning rate: 82.0
+Winning rate: 92.0
+Winning rate: 98.0
+Winning rate: 96.0
+Winning rate: 92.0
+Winning rate: 98.0
+Winning rate: 100.0
+Winning rate: 98.0
+Winning rate: 98.0
+Winning rate: 98.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 94.0
+Winning rate: 100.0
+Winning rate: 98.0
+Winning rate: 94.0
+Winning rate: 98.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 98.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 96.0
+Winning rate: 98.0
+Winning rate: 98.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 98.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 92.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 98.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 96.0
+Winning rate: 100.0
+Winning rate: 98.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 94.0
+Winning rate: 98.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 98.0
+Winning rate: 100.0
+Winning rate: 96.0
+Winning rate: 92.0
+Winning rate: 98.0
+Winning rate: 98.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 98.0
+Winning rate: 100.0
+Winning rate: 98.0
+Winning rate: 100.0
+Winning rate: 98.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 100.0
+Winning rate: 100.0

@@ -1,10 +1,7 @@
 package assignment3;
 
 import LUT.StateActionLookUpTable;
-import Robot.Action;
-import Robot.Distance;
-import Robot.Energy;
-import Robot.OperationMode;
+import Robot.*;
 import assignment1.NeuralNet;
 import robocode.*;
 
@@ -20,16 +17,20 @@ public class MyRobotV2 extends AdvancedRobot{
             Energy.values().length,
             Energy.values().length,
             Distance.values().length,
-            Distance.values().length,
-            Action.values().length
-    );
-    private static double learningRate = 0.2;
-    public static double momentum = 0.9;
+            PositionX.values().length,
+            PositionY.values().length,
+            Action.values().length);
+
+    static final int replyMemorySize = 1;
+    static ReplayMemory<Data> replayMemory = new ReplayMemory<>(replyMemorySize);
+
+    private static double learningRate = 0.001;
+    public static double momentum = 0.7;
     public static int argA = -1;
     public static int argB = 1;
-    public static int inputNum = 5; // MyHp, EnemyHp, Distance2Enemy, Distance2Centre, Action
+    public static int inputNum = 6; // 5 +1 = 6
     public static int outputNum = 1;
-    public static int hiddenNum = 6;
+    public static int hiddenNum = 42;
     public static int actionType = Action.values().length;
 
     public static double error = 0.0;
@@ -49,36 +50,14 @@ public class MyRobotV2 extends AdvancedRobot{
 
     private static double currReward = 0.0;
 
-    private double currMyEnergy = 100.0;
-    private double currEnemyEnergy = 100.0;
-    private double currDistance2Enemy = 300;
-    private double currDistance2Centre = 200;
-    private Action currAction = Action.FORWARD;
-
-    private double preMyEnergy = 120;
-    private double preEnemyEnergy = 120;
-    private double preDistance2Enemy = 50;
-    private double preDistance2Centre = 40;
-    private Action preAction = Action.FORWARD;
-
-    private Random random = new Random();
-
-    private double myX = 0.0;
-    private double myY = 0.0;
-    private double myEnergy = 0.0;
-    private double enemyEnergy = 0.0;
-    private double enemyBearing = 0.0;
-    private double enemyDistance = 0.0;
-    private double centreDistance = 0.0;
-
 
     //there are two modes that the tank can be in
     private OperationMode currOperationMode = OperationMode.SCAN;
 
     //discount factor and learning rate used by RL:
-    private double gamma = 0.90;//discount factor
+    private double gamma = 0.30;//discount factor
     private double alpha = 0.1;//learning rate
-    private double epsilonInit = 0.2;
+    private double epsilonInit = 0.05;
     private double epsilon = epsilonInit;
 
 
@@ -91,15 +70,38 @@ public class MyRobotV2 extends AdvancedRobot{
     private double instanceGoodReward = 1.0;
     private double terminalGoodReward = 2.0;
 
-    static String logFilename = "myTankRobot-logfile_Winning_rate_e=0.05_NN.txt";
+    String logFilename = "myTankRobot-logfile_1211_gamma_"+ gamma+".txt";
     static PrintStream logger = null;
 
     //get the centre of the board:
     int xMid = 0;
     int yMid = 0;
 
-    private boolean isOnlineLearning = true;
+    private double currMyEnergy = 100.0;
+    private double currEnemyEnergy = 100.0;
+    private double currDistance2Enemy = 300;
+    private double currXPosition = 150;
+    private double currYPosition = 320;
+    private Action currAction = Action.FORWARD;
 
+    private double preMyEnergy = 120;
+    private double preEnemyEnergy = 120;
+    private double preDistance2Enemy = 50;
+    private double preXPosition = 20;
+    private double preYPosition = 320;
+    private Action preAction = Action.FORWARD;
+
+    private Random random = new Random();
+
+    private double myX = 0.0;
+    private double myY = 0.0;
+    private double myEnergy = 0.0;
+    private double enemyEnergy = 0.0;
+    private double enemyBearing = 0.0;
+    private double enemyDistance = 0.0;
+    private double centreDistance = 0.0;
+
+    private boolean isOnlineLearning = true;
 
 
     public void run(){
@@ -142,7 +144,7 @@ public class MyRobotV2 extends AdvancedRobot{
         while(true){
             //to do?
             //
-            if(totalNumRounds > 40000) epsilon = 0.0;
+
 
             switch (currOperationMode) {
                 case SCAN:
@@ -155,13 +157,12 @@ public class MyRobotV2 extends AdvancedRobot{
                         if (Math.random() <= epsilon) {
                             currAction = selectRandomAction();
                         } else {
-                            currAction = Action.values()[selectGreedyActionFromNN(currMyEnergy, currEnemyEnergy, currDistance2Enemy, currDistance2Centre)];
+                            currAction = Action.values()[selectGreedyActionFromNN(currMyEnergy, currEnemyEnergy, currDistance2Enemy, currXPosition, currYPosition)];
                         }
                     }
-
                     switch (currAction) {
                         case FORWARD: {
-//                            setTurnRight(enemyBearing);
+                            setTurnRight(enemyBearing);
                             setAhead(100);
                             execute();
                             break;
@@ -173,7 +174,7 @@ public class MyRobotV2 extends AdvancedRobot{
                             break;
                         }
                         case RETREAT: {
-                            setTurnRight(180);
+                            setTurnRight(enemyBearing+180);
                             setAhead(100);
                             execute();
                             break;
@@ -193,16 +194,15 @@ public class MyRobotV2 extends AdvancedRobot{
                     }
                     //core code
                     //update previous q:
-                    double[] previousIndex = new double[]{
-                            preMyEnergy,
-                            preEnemyEnergy,
-                            preDistance2Enemy,
-                            preDistance2Centre,
-                            preAction.ordinal()
-                    };
+
                     //myLUT.train(previousIndex, computeQ(currReward, isOffPolicy));
                     if(isOnlineLearning){
-                        neuralNet.train(previousIndex, computeQFromNN(currReward, isOffPolicy));
+                        //store in replay memory queue:
+
+                        //neuralNet.train(previousIndex, computeQFromNN(currReward, isOffPolicy));
+
+                        //use replay memory:
+                        updatePreQ();
 
                     }
                     currOperationMode = OperationMode.SCAN;
@@ -210,12 +210,90 @@ public class MyRobotV2 extends AdvancedRobot{
         }
     }
 
-    private int selectGreedyActionFromNN(double currMyEnergy, double currEnemyEnergy, double currDistance2Enemy, double currDistance2Centre ){
+    private void updatePreQ(){
+
+        replayMemory.add(new Data(new StateAction(preMyEnergy, preEnemyEnergy, preDistance2Enemy, preXPosition, preYPosition, preAction),
+                new StateAction(currMyEnergy, currEnemyEnergy, currDistance2Enemy, currXPosition, currYPosition,currAction ),
+                currReward));
+
+        replayTrain();
+
+    }
+    public void replayTrain(){
+
+        //neuralNet.train(previousIndex, computeQFromNN(currReward, isOffPolicy));
+        for(Object object: replayMemory.sample(replyMemorySize)){
+            Data data = (Data) object;
+            double [] previousInput = {
+                    data.preStateAction.energy,
+                    data.preStateAction.enemyEnergy,
+                    data.preStateAction.distance2Enemy,
+                    data.preStateAction.xPosition,
+                    data.preStateAction.yPosition,
+                    data.preStateAction.action.ordinal()
+            };
+            neuralNet.train(previousInput, computeQFromNNWithReplayMem(data, isOffPolicy));
+        }
+
+
+
+
+    }
+    public double computeQFromNNWithReplayMem(Data data, boolean isOffPolicy){
+        double [] previousInput = {
+                data.preStateAction.energy,
+                data.preStateAction.enemyEnergy,
+                data.preStateAction.distance2Enemy,
+                data.preStateAction.xPosition,
+                data.preStateAction.yPosition,
+                data.preStateAction.action.ordinal()
+        };
+
+        double previousQ = neuralNet.outputFor(previousInput);
+
+        double [] currentInput = {
+                data.currStateAction.energy,
+                data.currStateAction.enemyEnergy,
+                data.currStateAction.distance2Enemy,
+                data.currStateAction.xPosition,
+                data.currStateAction.yPosition,
+                currAction.ordinal()
+        };
+
+        double currentQ = neuralNet.outputFor(currentInput);
+
+        int bestActionIndex = selectGreedyActionFromNN(
+                data.currStateAction.energy,
+                data.currStateAction.enemyEnergy,
+                data.currStateAction.distance2Enemy,
+                data.currStateAction.xPosition,
+                data.currStateAction.yPosition
+        );
+        double [] bestQInput = {
+                data.currStateAction.energy,
+                data.currStateAction.enemyEnergy,
+                data.currStateAction.distance2Enemy,
+                data.currStateAction.xPosition,
+                data.currStateAction.yPosition,
+                bestActionIndex
+        };
+        double bestQ = neuralNet.outputFor(bestQInput);
+        double updatedPreviousQ = 0;
+        if(isOffPolicy){
+//            bestQ;
+            updatedPreviousQ = previousQ + alpha*(currReward + gamma*bestQ-previousQ);
+        }else{
+            updatedPreviousQ = previousQ + alpha*(currReward + gamma*currentQ - previousQ);
+        }
+        return updatedPreviousQ;
+    }
+
+    private int selectGreedyActionFromNN(double currMyEnergy, double currEnemyEnergy, double currDistance2Enemy, double x, double y ){
         double maxQ = Double.MIN_VALUE;
         int bestActionIndex =0;
         for(int index = 0; index < actionType; index += 1){
             double actionIndex = index;
-            double [] statesAction = {currMyEnergy, currEnemyEnergy, currDistance2Enemy, currDistance2Centre, actionIndex};
+            double [] statesAction = {currMyEnergy, currEnemyEnergy, currDistance2Enemy, x,y, actionIndex};
             double currQ = neuralNet.outputFor(statesAction);
             if( currQ> maxQ){
                 maxQ = currQ;
@@ -244,21 +322,17 @@ public class MyRobotV2 extends AdvancedRobot{
         preMyEnergy = currMyEnergy;
         preEnemyEnergy = currEnemyEnergy;
         preDistance2Enemy = currDistance2Enemy;
-        preDistance2Centre = currDistance2Centre;
-
-        /**
-         * get current state:
-         */
-//        currMyEnergy = getEneryEnum(getEnergy());
-//        currEnemyEnergy = getEneryEnum(e.getEnergy());
-//        currDistance2Enemy = getDistanceEnum(e.getDistance());
-//        currDistance2Centre = getDistanceEnum(distance2Centre(myX, myY, xMid, yMid));
+//        preDistance2Centre = currDistance2Centre;
+        preXPosition = currXPosition;
+        preYPosition = currYPosition;
 
 
         currMyEnergy = getEnergy();
         currEnemyEnergy = e.getEnergy();
         currDistance2Enemy = e.getDistance();
-        currDistance2Centre = distance2Centre(myX, myY, xMid, yMid);
+//        currDistance2Centre = distance2Centre(myX, myY, xMid, yMid);
+        currXPosition = getX();
+        currYPosition = getY();
 
         //become perform mode:
         currOperationMode = OperationMode.PERFORM_ACTION;
@@ -269,7 +343,8 @@ public class MyRobotV2 extends AdvancedRobot{
                 preMyEnergy,
                 preEnemyEnergy,
                 preDistance2Enemy,
-                preDistance2Centre,
+                preXPosition,
+                preYPosition,
                 preAction.ordinal()};
 
         double previousQ = neuralNet.outputFor(previousInput);
@@ -278,7 +353,8 @@ public class MyRobotV2 extends AdvancedRobot{
                 currMyEnergy,
                 currEnemyEnergy,
                 currDistance2Enemy,
-                currDistance2Centre,
+                currXPosition,
+                currYPosition,
                 currAction.ordinal()
         };
 
@@ -288,13 +364,15 @@ public class MyRobotV2 extends AdvancedRobot{
                 currMyEnergy,
                 currEnemyEnergy,
                 currDistance2Enemy,
-                currDistance2Centre);
+                currXPosition,
+                currYPosition);
 
         double [] bestQInput = {
                 currMyEnergy,
                 currEnemyEnergy,
                 currDistance2Enemy,
-                currDistance2Centre,
+                currXPosition,
+                currYPosition,
                 bestActionIndex
         };
         double bestQ = neuralNet.outputFor(bestQInput);
@@ -337,17 +415,18 @@ public class MyRobotV2 extends AdvancedRobot{
     public void onWin(WinEvent e){
 
         //save LUT
-        try {
-            myLUT.save(getDataFile("myLUT_NN.dat"));//make sure to use the same filename?
-        } catch (Exception exception) {
-            System.out.println("Save Error!" + exception);
-        }
+//        try {
+//            myLUT.save(getDataFile("myLUT_NN.dat"));//make sure to use the same filename?
+//        } catch (Exception exception) {
+//            System.out.println("Save Error!" + exception);
+//        }
         currReward = terminalGoodReward;
         double[] index = new double[]{
                 preMyEnergy,
                 preEnemyEnergy,
                 preDistance2Enemy,
-                preDistance2Centre,
+                preXPosition,
+                preYPosition,
                 preAction.ordinal()
         };
         //myLUT.train(index,computeQ(currReward,isOffPolicy));
@@ -378,18 +457,19 @@ public class MyRobotV2 extends AdvancedRobot{
     public void onDeath(DeathEvent e){
 
         //save LUT
-        try {
-            myLUT.save(getDataFile("myLUT_NN.dat"));
-        } catch (Exception exception) {
-            System.out.println("Save Error!" + exception);
-        }
+//        try {
+//            myLUT.save(getDataFile("myLUT_NN.dat"));
+//        } catch (Exception exception) {
+//            System.out.println("Save Error!" + exception);
+//        }
 
         currReward = terminalBadReward;
         double[] index = new double[]{
                 preMyEnergy,
                 preEnemyEnergy,
                 preDistance2Enemy,
-                preDistance2Centre,
+                preXPosition,
+                preYPosition,
                 preAction.ordinal()
         };
         //myLUT.train(index,computeQ(currReward,isOffPolicy));
@@ -419,19 +499,19 @@ public class MyRobotV2 extends AdvancedRobot{
         return Action.values()[selectedIndex];
     }
 
-    private Action selectGreedyAction( int myEnergy,int enemyEnergy, int enemyDistance, int centreDistance){
-        double bestQ = -1;
-        Action bestAction = null;
-        for(Action action: Action.values()){
-            double currQ = myLUT.getValueQ(myEnergy,enemyEnergy,enemyDistance,centreDistance,action.ordinal());
-            if(bestQ <currQ){
-                bestQ = currQ;
-                bestAction = action;
-            }
-        }
-        return bestAction;
-
-    }
+//    private Action selectGreedyAction( int myEnergy,int enemyEnergy, int enemyDistance, int centreDistance){
+//        double bestQ = -1;
+//        Action bestAction = null;
+//        for(Action action: Action.values()){
+//            double currQ = myLUT.getValueQ(myEnergy,enemyEnergy,enemyDistance,x, y,action.ordinal());
+//            if(bestQ <currQ){
+//                bestQ = currQ;
+//                bestAction = action;
+//            }
+//        }
+//        return bestAction;
+//
+//    }
 
     private double distance2Centre(double x1, double y1, double centreX, double centreY){
         this.centreDistance = Math.sqrt(Math.pow(x1 - centreX, 2) + Math.pow(y1 - centreY, 2));

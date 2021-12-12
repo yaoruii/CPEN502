@@ -4,88 +4,35 @@ import Sarb.LUTInterface;
 import robocode.RobocodeFileOutputStream;
 
 import java.io.*;
-import java.util.Arrays;
 
 public class StateActionLookUpTable implements LUTInterface {
 
-    private double[][][][][] lut;
-    private int[][][][][] numOfVisits;
+    protected double[][][][][][] lut;
+    protected int[][][][][][] numOfVisits;
 
-    public double[][][][][] getLut() {
-        return lut;
-    }
 
-    public void setLut(double[][][][][] lut) {
-        this.lut = lut;
-    }
-
-    public int[][][][][] getNumOfVisits() {
-        return numOfVisits;
-    }
-
-    public void setNumOfVisits(int[][][][][] numOfVisits) {
-        this.numOfVisits = numOfVisits;
-    }
-
-    public int getNumEnergyDim1() {
-        return numEnergyDim1;
-    }
-
-    public void setNumEnergyDim1(int numEnergyDim1) {
-        this.numEnergyDim1 = numEnergyDim1;
-    }
-
-    public int getNumEnergyDim2() {
-        return numEnergyDim2;
-    }
-
-    public void setNumEnergyDim2(int numEnergyDim2) {
-        this.numEnergyDim2 = numEnergyDim2;
-    }
-
-    public int getNumDistanceDim1() {
-        return numDistanceDim1;
-    }
-
-    public void setNumDistanceDim1(int numDistanceDim1) {
-        this.numDistanceDim1 = numDistanceDim1;
-    }
-
-    public int getNumDistanceDim2() {
-        return numDistanceDim2;
-    }
-
-    public void setNumDistanceDim2(int numDistanceDim2) {
-        this.numDistanceDim2 = numDistanceDim2;
-    }
-
-    public int getNumActionDim() {
-        return numActionDim;
-    }
-
-    public void setNumActionDim(int numActionDim) {
-        this.numActionDim = numActionDim;
-    }
-
-    private int numEnergyDim1;
-    private int numEnergyDim2;
-    private int numDistanceDim1;
-    private int numDistanceDim2;
-    private int numActionDim;
+    protected int numEnergyDim1;
+    protected int numEnergyDim2;
+    protected int numDistanceDim1;
+    protected int numPosition1;
+    protected int numPosition2;
+    protected int numActionDim;
 
     public StateActionLookUpTable(int numEnergyDim1,
                                   int numEnergyDim2,
                                   int numDistanceDim1,
-                                  int numDistanceDim2,
+                                  int numPosition1,
+                                  int numPosition2,
                                   int numActionDim){
         this.numEnergyDim1 = numEnergyDim1;
         this.numEnergyDim2 = numEnergyDim2;
         this.numDistanceDim1 = numDistanceDim1;
-        this.numDistanceDim2 = numDistanceDim2;
+        this.numPosition1 = numPosition1;
+        this.numPosition2 = numPosition2;
         this.numActionDim = numActionDim;
 
-        lut = new double[numEnergyDim1][numEnergyDim2][numDistanceDim1][numDistanceDim2][numActionDim];
-        numOfVisits = new int[numEnergyDim1][numEnergyDim2][numDistanceDim1][numDistanceDim2][numActionDim];
+        lut = new double[numEnergyDim1][numEnergyDim2][numDistanceDim1][numPosition1][numPosition2][numActionDim];
+        numOfVisits = new int[numEnergyDim1][numEnergyDim2][numDistanceDim1][numPosition1][numPosition2][numActionDim];
         this.initialiseLUT();
 
     }
@@ -102,7 +49,8 @@ public class StateActionLookUpTable implements LUTInterface {
         int idx3 = (int) X[2];
         int idx4 = (int) X[3];
         int idx5 = (int) X[4];
-        return lut[idx1][idx2][idx3][idx4][idx5];
+        int idx6 = (int) X[5];
+        return lut[idx1][idx2][idx3][idx4][idx5][idx6];
     }
 
     @Override
@@ -112,9 +60,10 @@ public class StateActionLookUpTable implements LUTInterface {
         int idx3 = (int) X[2];
         int idx4 = (int) X[3];
         int idx5 = (int) X[4];
+        int idx6 = (int) X[5];
 
-        lut[idx1][idx2][idx3][idx4][idx5] = argValue;
-        numOfVisits[idx1][idx2][idx3][idx4][idx5] ++;
+        lut[idx1][idx2][idx3][idx4][idx5][idx6] = argValue;
+        numOfVisits[idx1][idx2][idx3][idx4][idx5][idx6] ++;
         return argValue;
     }
 
@@ -128,20 +77,22 @@ public class StateActionLookUpTable implements LUTInterface {
             e.printStackTrace();
         }
 
-        file.println(numEnergyDim1 * numEnergyDim2 * numDistanceDim1 * numDistanceDim2 * numActionDim);
-        file.println(5);
+        file.println(numEnergyDim1 * numEnergyDim2 * numDistanceDim1 * numPosition1 * numPosition2 * numActionDim);
+        file.println(6);
 
-        for (int A = 0; A < numEnergyDim1; A++) {
-            for (int B = 0; B < numEnergyDim2; B++) {
-                for (int C = 0; C < numDistanceDim1; C++) {
-                    for (int D = 0; D < numDistanceDim2; D++) {
-                        for (int E = 0; E < numActionDim; E++) {
-                            String row = String.format("%d, %d, %d, %d, %d, %2.5f, %d",
-                                    A, B, C, D, E,
-                                    lut[A][B][C][D][E],
-                                    numOfVisits[A][B][C][D][E]
-                            );
-                            file.println(row);
+        for(int A = 0; A < numEnergyDim1; A += 1) {
+            for (int B = 0; B < numEnergyDim2; B += 1) {
+                for (int C = 0; C < numDistanceDim1; C += 1) {
+                    for (int D = 0; D < numPosition1; D += 1) {
+                        for (int E = 0; E < numPosition2; E += 1) {
+                            for (int action = 0; action < numActionDim; action++) {
+                                String row = String.format("%d,%d,%d,%d,%d,%d,%2.5f,%d",
+                                        A, B, C, D, E,action,
+                                        lut[A][B][C][D][E][action],
+                                        numOfVisits[A][B][C][D][E][action]
+                                );
+                                file.println(row);
+                            }
                         }
                     }
                 }
@@ -154,7 +105,7 @@ public class StateActionLookUpTable implements LUTInterface {
     public void load(String argFileName) throws IOException {
         FileInputStream fileInputStream = new FileInputStream(argFileName);
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fileInputStream));
-        int expectedNumOfRows = numEnergyDim1 * numEnergyDim2 * numDistanceDim1 * numDistanceDim2 * numActionDim;
+        int expectedNumOfRows = numEnergyDim1 * numEnergyDim2 * numDistanceDim1 * numPosition1*numPosition2 * numActionDim;
         int actualNumOfRows = Integer.valueOf(bufferedReader.readLine());
         int actualNumOfDimensions = Integer.valueOf(bufferedReader.readLine());
 
@@ -165,14 +116,15 @@ public class StateActionLookUpTable implements LUTInterface {
             throw new IOException();
         }
 
-        for (int A = 0; A < numEnergyDim1; A++) {
-            for (int B = 0; B < numEnergyDim2; B++) {
-                for (int C = 0; C < numDistanceDim1; C++) {
-                    for (int D = 0; D < numDistanceDim2; D++) {
-                        for (int E = 0; E < numActionDim; E++) {
+        for(int A = 0; A < numEnergyDim1; A += 1) {
+            for (int B = 0; B < numEnergyDim2; B += 1) {
+                for (int C = 0; C < numDistanceDim1; C += 1) {
+                    for (int D = 0; D < numPosition1; D += 1) {
+                        for (int E = 0; E < numPosition2; E += 1) {
+                            for (int action = 0; action < numActionDim; action++) {
 
-                            String title = bufferedReader.readLine();
-                            String[] arr = title.split(",");
+                                String title = bufferedReader.readLine();
+                                String[] arr = title.split(",");
 
 //                            int energyDim1 = Integer.parseInt(arr[0]);
 //                            int energyDim2 = Integer.parseInt(arr[1]);
@@ -180,11 +132,12 @@ public class StateActionLookUpTable implements LUTInterface {
 //                            int distanceDim2 = Integer.parseInt(arr[3]);
 //                            int actionDim = Integer.parseInt(arr[4]);
 
-                            int Q = Integer.parseInt(arr[5]);
-                            int visit = Integer.parseInt(arr[6]);
+                                int Q = Integer.parseInt(arr[5]);
+                                int visit = Integer.parseInt(arr[6]);
 
-                            lut[A][B][C][D][E] = Q;
-                            numOfVisits[A][B][C][D][E] = visit;
+                                lut[A][B][C][D][E][action] = Q;
+                                numOfVisits[A][B][C][D][E][action] = visit;
+                            }
                         }
                     }
                 }
@@ -203,9 +156,13 @@ public class StateActionLookUpTable implements LUTInterface {
         for(int A = 0; A < numEnergyDim1; A += 1){
             for(int B = 0; B < numEnergyDim2; B += 1){
                 for(int C = 0; C < numDistanceDim1; C += 1){
-                    for(int D = 0; D < numDistanceDim2; D += 1){
-                        for(int E = 0; E < numActionDim; E += 1){
-                            lut[A][B][C][D][E] = Math.random();
+                    for(int D = 0; D < numPosition1; D += 1){
+                        for(int E = 0; E < numPosition2; E += 1){
+                            for(int action = 0; action< numActionDim; action++){
+                                lut[A][B][C][D][E][action] = Math.random();
+
+
+                            }
                         }
                     }
                 }
@@ -225,12 +182,12 @@ public class StateActionLookUpTable implements LUTInterface {
         return 0;
     }
 
-    public double getValueQ(int stateAction1, int stateAction2, int stateAction3, int stateAction4, int stateAction5){
-        return lut[stateAction1][stateAction2][stateAction3][stateAction4][stateAction5];
+    public double getValueQ(int stateAction1, int stateAction2, int stateAction3, int stateAction4, int stateAction5, int stateAction6){
+        return lut[stateAction1][stateAction2][stateAction3][stateAction4][stateAction5][stateAction6];
     }
 
-    public double getBestValueQ(int state1, int state2, int state3, int state4){
-        double[] allAvailable = lut[state1][state2][state3][state4];
+    public double getBestValueQ(int state1, int state2, int state3, int state4, int state5){
+        double[] allAvailable = lut[state1][state2][state3][state4][state5];
         double bestQ = allAvailable[0];
         for(int i = 1; i<allAvailable.length; i++){
             bestQ = Math.max(bestQ, allAvailable[i]);
